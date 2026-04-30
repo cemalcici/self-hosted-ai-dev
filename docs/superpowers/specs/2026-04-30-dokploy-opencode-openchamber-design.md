@@ -47,7 +47,7 @@ Hedef kullanım modeli web odaklıdır: kullanıcı Cloudflare DNS üzerinden Do
 
 - OpenChamber, harici bir OpenCode backend'ine `OPENCODE_HOST` veya `OPENCODE_PORT` ile bağlanabiliyor.
 - `OPENCODE_SKIP_START=true` kullanıldığında kendi gömülü OpenCode başlatması devre dışı bırakılabiliyor.
-- Docker/compose dağıtım örnekleri mevcut.
+- Upstream Docker/compose dağıtım örnekleri prebuilt registry image yerine source tree içinden local build yaklaşımı kullanıyor.
 - GitHub authentication için UI/server tarafında device flow destekleyen yerleşik modüller var.
 - Repository clone yardımcıları ve GitHub odaklı workflow yetenekleri bulunuyor.
 
@@ -86,9 +86,13 @@ Kullanıcıya özel secret, GitHub auth veya runtime state build aşamasına gö
 
 OpenChamber, web arayüzü ve GitHub entegrasyon katmanı olarak ayrı serviste tutulacak. Bu servis:
 
+- repo içine `openchamber/` git submodule olarak eklenecek upstream source tree'den build edilecek
+- release tag'e pinlenecek; ilk hedef ref `v1.9.10` olacak
 - kendi embedded OpenCode örneğini başlatmayacak
 - `OPENCODE_HOST=http://opencode:4096` ile backend'e bağlanacak
 - `OPENCODE_SKIP_START=true` ile iç sunucu başlatmayı kapatacak
+
+Bu kararın nedeni, `ghcr.io/openchamber/openchamber:main` image referansının çekilememesi ve upstream'in resmi compose örneklerinde de local build modelinin kullanılmasıdır.
 
 ### Karar 4: Ortak workspace volume kullanılacak
 
@@ -142,6 +146,7 @@ Beklenen başlangıç komutu:
 Sorumluluklar:
 
 - web arayüzünü sunmak
+- repo içindeki submodule source tree'den build edilmek
 - GitHub authentication akışını başlatmak ve yönetmek
 - repository klonlama ve görsel çalışma akışlarını sağlamak
 - OpenCode backend'ine istemci olarak bağlanmak
@@ -189,6 +194,7 @@ SSH anahtarı veya `.ssh` mount tasarımın parçası değildir.
 - Compose dosyası değerleri environment variable'lar üzerinden okumalıdır.
 - Gerçek secret değerler repo içine yazılmamalıdır.
 - Dokploy arayüzünde `.env.example` referans alınarak gerçek environment variable değerleri tanımlanacaktır.
+- OpenChamber image referansı environment variable ile taşınmayacaktır; servis local build kullanacaktır.
 
 ## Startup ve Bootstrap Akışı
 
