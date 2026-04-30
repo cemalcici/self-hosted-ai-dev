@@ -15,6 +15,7 @@ WORKDIR /app
 RUN bun add -g opencode-ai && bunx oh-my-opencode-slim@latest install --no-tui
 
 COPY scripts/opencode-entrypoint.sh /usr/local/bin/opencode-entrypoint.sh
+COPY config/oh-my-opencode-slim.jsonc /app/config/oh-my-opencode-slim.jsonc
 RUN chmod +x /usr/local/bin/opencode-entrypoint.sh && \
     mkdir -p /workspace /home/opencode/.config /home/opencode/.local/share && \
     chown -R opencode:opencode /workspace /home/opencode

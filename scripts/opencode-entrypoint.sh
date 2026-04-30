@@ -17,25 +17,10 @@ if [ ! -f "$CONFIG_FILE" ]; then
 EOF
 fi
 
+REPO_PLUGIN_CONFIG_TEMPLATE="/app/config/oh-my-opencode-slim.jsonc"
+
 if [ ! -f "$PLUGIN_CONFIG_FILE" ]; then
-  cat > "$PLUGIN_CONFIG_FILE" <<'EOF'
-{
-  "$schema": "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json",
-  "preset": "openai",
-  "presets": {
-    "openai": {
-      "orchestrator": { "model": "openai/gpt-5.4", "variant": "high", "skills": ["*"], "mcps": ["*", "!context7"] },
-      "oracle": { "model": "openai/gpt-5.4", "variant": "high", "skills": ["simplify"], "mcps": [] },
-      "librarian": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
-      "explorer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] },
-      "designer": { "model": "openai/gpt-5.4-mini", "variant": "medium", "skills": ["agent-browser"], "mcps": [] },
-      "fixer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] }
-    }
-  },
-  "showStartupToast": true,
-  "disabled_mcps": []
-}
-EOF
+  cp "$REPO_PLUGIN_CONFIG_TEMPLATE" "$PLUGIN_CONFIG_FILE"
 fi
 
 # Add bun global bin to PATH for user
