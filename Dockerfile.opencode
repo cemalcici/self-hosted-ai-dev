@@ -4,6 +4,9 @@ ENV HOME=/home/opencode
 ENV XDG_CONFIG_HOME=/home/opencode/.config
 ENV XDG_DATA_HOME=/home/opencode/.local/share
 ENV PATH="/home/opencode/.bun/bin:${PATH}"
+ENV BUN_INSTALL=/home/opencode/.bun
+ENV BUN_INSTALL_BIN_DIR=/home/opencode/.bun/bin
+ENV BUN_INSTALL_DIR=/home/opencode/.bun
 
 RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
