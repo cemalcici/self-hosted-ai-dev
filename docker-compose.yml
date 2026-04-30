@@ -1,0 +1,40 @@
+services:
+  opencode:
+    build:
+      context: .
+      dockerfile: Dockerfile.opencode
+    env_file:
+      - .env
+    environment:
+      OPENCODE_SERVER_PASSWORD: ${OPENCODE_SERVER_PASSWORD}
+      OPENCODE_SERVER_USERNAME: ${OPENCODE_SERVER_USERNAME}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      OPENCODE_PORT: ${OPENCODE_PORT}
+    volumes:
+      - opencode_config:/home/opencode/.config/opencode
+      - opencode_data:/home/opencode/.local/share/opencode
+      - workspace:/workspace
+
+  openchamber:
+    image: ${OPENCHAMBER_IMAGE}
+    env_file:
+      - .env
+    environment:
+      UI_PASSWORD: ${UI_PASSWORD}
+      OPENCODE_HOST: ${OPENCODE_HOST}
+      OPENCODE_SKIP_START: ${OPENCODE_SKIP_START}
+    depends_on:
+      - opencode
+    ports:
+      - "${OPENCHAMBER_PORT}:3000"
+    volumes:
+      - openchamber_config:/home/openchamber/.config/openchamber
+      - workspace:/workspace
+
+volumes:
+  opencode_config:
+  opencode_data:
+  openchamber_config:
+  workspace:
