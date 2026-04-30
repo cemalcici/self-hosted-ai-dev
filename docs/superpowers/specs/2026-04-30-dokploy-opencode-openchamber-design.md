@@ -31,6 +31,7 @@ Hedef kullanım modeli web odaklıdır: kullanıcı Cloudflare DNS üzerinden Do
 ### OpenCode
 
 - OpenCode için resmi Docker image kullanımı belgelenmiş durumda.
+- Bun tabanlı kurulumda çalışır CLI paketi `opencode-ai` olarak dağıtılıyor; çalıştırılan binary adı ise `opencode`.
 - Headless servis modeli `opencode serve --hostname 0.0.0.0 --port 4096` ile destekleniyor.
 - Sunucu erişimi için `OPENCODE_SERVER_PASSWORD` ve isteğe bağlı `OPENCODE_SERVER_USERNAME` gibi environment variable'lar mevcut.
 - Veri ve config dizinleri XDG tabanlı dizinlerle yönlendirilebiliyor.
@@ -75,6 +76,7 @@ Bu seçimle UI katmanı ile backend/agent katmanı ayrılır. Sorun ayıklama, g
 `opencode` servisi için özel bir Dockerfile yazılacak. Bu image:
 
 - OpenCode'u kuracak
+- pratikte bunu `bun add -g opencode-ai` ile yapacak ve container içinde `opencode` binary'sini sağlayacak
 - `oh-my-opencode-slim` paketini kuracak
 - runtime'da gereken bootstrap akışı için gerekli script veya entrypoint katmanını taşıyacak
 

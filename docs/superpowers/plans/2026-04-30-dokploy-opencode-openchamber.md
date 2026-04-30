@@ -189,14 +189,14 @@ git commit -m "chore: add initial compose and env contract"
 
 - [ ] **Step 1: Write the failing image definition**
 
-Create `Dockerfile.opencode` with an intentionally incomplete image that does not install the plugin yet:
+Create `Dockerfile.opencode` with an intentionally incomplete image that does not install the plugin yet. Note: the installable Bun package is `opencode-ai`, while the runtime binary remains `opencode`:
 
 ```dockerfile
 FROM oven/bun:1
 
 WORKDIR /app
 
-RUN bun add -g opencode
+RUN bun add -g opencode-ai
 
 CMD ["opencode", "serve", "--hostname", "0.0.0.0", "--port", "4096"]
 ```
@@ -227,7 +227,7 @@ RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
 WORKDIR /app
 
-RUN bun add -g opencode oh-my-opencode-slim@latest
+RUN bun add -g opencode-ai oh-my-opencode-slim@latest
 
 COPY scripts/opencode-entrypoint.sh /usr/local/bin/opencode-entrypoint.sh
 RUN chmod +x /usr/local/bin/opencode-entrypoint.sh && mkdir -p /workspace /home/opencode/.config /home/opencode/.local/share && chown -R opencode:opencode /workspace /home/opencode
