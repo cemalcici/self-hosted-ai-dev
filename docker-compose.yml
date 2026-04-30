@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.opencode
-    env_file:
-      - .env
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
@@ -19,8 +17,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.openchamber
-    env_file:
-      - .env
     environment:
       UI_PASSWORD: ${UI_PASSWORD}
       OPENCODE_HOST: ${OPENCODE_HOST}
