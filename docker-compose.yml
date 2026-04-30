@@ -18,7 +18,9 @@ services:
       - workspace:/workspace
 
   openchamber:
-    image: ${OPENCHAMBER_IMAGE}
+    build:
+      context: .
+      dockerfile: Dockerfile.openchamber
     env_file:
       - .env
     environment:
