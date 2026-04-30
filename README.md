@@ -65,8 +65,4 @@ The plugin specialists (`orchestrator`, `oracle`, `librarian`, `explorer`, `desi
 
 The repo-managed source file for the default preset is `config/oh-my-opencode-slim.jsonc`. To change the shipped preset, edit that file in the repo and rebuild/redeploy the stack.
 
-**First bootstrap behavior:** the entrypoint script copies `config/oh-my-opencode-slim.jsonc` into the persistent OpenCode config directory as `~/.config/opencode/oh-my-opencode-slim.jsonc` only when that target file does not already exist. If the file already exists in the persistent volume, the entrypoint does **not** overwrite it—operator customizations inside an existing volume are preserved.
-
-**For existing deployments:** operators who want to apply repo defaults to an already-initialized volume must either:
-- Edit the file directly in the mounted config volume (e.g., inside the `opencode_config` Docker volume), or
-- Remove the existing `~/.config/opencode/oh-my-opencode-slim.jsonc` file so bootstrap recreates it from the repo template on the next container start
+**Automatic sync on every start:** the entrypoint script copies `config/oh-my-opencode-slim.jsonc` into the persistent OpenCode config directory as `~/.config/opencode/oh-my-opencode-slim.jsonc` on every container start. This means any preset changes committed to the repo are automatically applied when the container restarts or the stack is redeployed—no manual volume edits or file deletion required.

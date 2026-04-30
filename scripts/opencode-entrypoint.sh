@@ -19,9 +19,7 @@ fi
 
 REPO_PLUGIN_CONFIG_TEMPLATE="/app/config/oh-my-opencode-slim.jsonc"
 
-if [ ! -f "$PLUGIN_CONFIG_FILE" ]; then
-  cp "$REPO_PLUGIN_CONFIG_TEMPLATE" "$PLUGIN_CONFIG_FILE"
-fi
+cp "$REPO_PLUGIN_CONFIG_TEMPLATE" "$PLUGIN_CONFIG_FILE"
 
 # Add bun global bin to PATH for user
 export PATH="$HOME/.bun/bin:$PATH"
