@@ -11,6 +11,16 @@ This repository provides a Dokploy-ready Docker Compose stack for:
 - `opencode`: custom-built backend image with `oh-my-opencode-slim` preinstalled
 - `openchamber`: web UI built from the pinned `openchamber/` submodule and connected to the `opencode` service
 
+## Prerequisites
+
+Before building or deploying, ensure the `openchamber` git submodule is present:
+
+```bash
+git submodule update --init
+```
+
+This is required because `Dockerfile.openchamber` copies from the `openchamber/` source tree. Without the submodule checked out, the build will fail.
+
 ## Required environment variables
 
 Copy `.env.example` to `.env` for local validation. In Dokploy, define the same variables in the project environment UI.
@@ -38,7 +48,8 @@ OpenChamber is exposed on port `3000` by default.
 
 - Deploy the repository as a Docker Compose project.
 - Let Dokploy manage public routing and domains.
-- Attach persistent volumes for OpenCode config/data, OpenChamber config, and the shared workspace.
+- Persistent volumes: `opencode_config`, `opencode_data`, `openchamber_config`, `workspace`.
+- `OPENCODE_HOST=http://opencode:4096` uses the internal Docker Compose service name; keep this value when deploying.
 - Use the OpenChamber UI to connect GitHub and clone repositories into the shared workspace.
 
 ## Shared workspace
