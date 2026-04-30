@@ -60,3 +60,13 @@ Both services mount the same `/workspace` volume. Repositories cloned through Op
 `oh-my-opencode-slim` does not create native OpenCode agent files under `~/.config/opencode/agents/`. Because of that, OpenChamber's agent picker is expected to show the native OpenCode agents such as `build` and `plan`, not the plugin's internal specialist roles.
 
 The plugin specialists (`orchestrator`, `oracle`, `librarian`, `explorer`, `designer`, `fixer`) are plugin-managed roles. Use them through the orchestrator flow or by mentioning them in chat when the client supports that pattern, rather than expecting them to appear as standalone OpenChamber agent cards.
+
+## Editing the oh-my-opencode-slim preset
+
+The repo-managed source file for the default preset is `config/oh-my-opencode-slim.jsonc`. To change the shipped preset, edit that file in the repo and rebuild/redeploy the stack.
+
+**First bootstrap behavior:** the entrypoint script copies `config/oh-my-opencode-slim.jsonc` into the persistent OpenCode config directory as `~/.config/opencode/oh-my-opencode-slim.jsonc` only when that target file does not already exist. If the file already exists in the persistent volume, the entrypoint does **not** overwrite it—operator customizations inside an existing volume are preserved.
+
+**For existing deployments:** operators who want to apply repo defaults to an already-initialized volume must either:
+- Edit the file directly in the mounted config volume (e.g., inside the `opencode_config` Docker volume), or
+- Remove the existing `~/.config/opencode/oh-my-opencode-slim.jsonc` file so bootstrap recreates it from the repo template on the next container start
