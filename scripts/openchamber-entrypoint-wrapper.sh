@@ -44,16 +44,8 @@ fi
 # shellcheck disable=SC2086
 exec runuser -u "$USER" -- sh -c "
   # Clear any stale PID file for this port so cli.js does not false-positive
-  # 'already running' when a previous container crashed and left a orphaned PID.
+  # 'already running' when a previous container crashed and left an orphaned PID.
   PID_FILE=\"$OPENCHAMBER_DATA_DIR/run/openchamber-$OPENCHAMBER_PORT.pid\"
-  if [ -f \"\$PID_FILE\" ]; then
-    stale_pid=\$(cat \"\$PID_FILE\" 2>/dev/null | tr -d '[:space:]')
-    if [ -n \"\$stale_pid\" ]; then
-      # If no process with that PID is alive, remove the stale file.
-      # This handles the case where PID N in the old container is now PID N
-      # in the new container but refers to an unrelated process.
-      kill -0 \"\$stale_pid\" 2>/dev/null || rm -f \"\$PID_FILE\"
-    fi
-  fi
+  rm -f \"\$PID_FILE\"
   exec $CMD
 "
