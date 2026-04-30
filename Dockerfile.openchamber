@@ -19,6 +19,10 @@ RUN bun install --frozen-lockfile --ignore-scripts
 FROM deps AS builder
 WORKDIR /app
 COPY openchamber/. .
+# Fix: mdExists must also check fs.existsSync(mdPath) not just !!mdPath
+# upstream v1.9.10 default behavior without the .md extension breaks remote-skill-path
+RUN sed -i 's/const mdExists = !!mdPath;/const mdExists = !!mdPath \&\& fs.existsSync(mdPath);/' \
+    packages/web/server/lib/opencode/skills.js
 RUN bun run build:web
 
 FROM oven/bun:1 AS runtime
