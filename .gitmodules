@@ -1,0 +1,3 @@
+[submodule "openchamber"]
+	path = openchamber
+	url = https://github.com/openchamber/openchamber.git

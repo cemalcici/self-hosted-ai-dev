@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a Dokploy-ready Docker Compose stack that runs OpenChamber against an OpenCode backend with oh-my-opencode-slim preinstalled, shared workspace storage, and `.env.example`-driven configuration.
+**Goal:** Build a Dokploy-ready Docker Compose stack that runs OpenChamber against an OpenCode backend with oh-my-opencode-slim preinstalled, shared workspace storage, `.env.example`-driven configuration, and an upstream-pinned OpenChamber submodule built locally.
 
-**Architecture:** The stack uses two services in one `docker-compose.yml`: a custom-built `opencode` service and a separate `openchamber` service. OpenChamber connects to OpenCode over the compose network, both services share a workspace volume, and runtime secrets stay outside the images via environment variables.
+**Architecture:** The stack uses two services in one `docker-compose.yml`: a custom-built `opencode` service and a separate `openchamber` service built from an upstream git submodule pinned to a release tag. OpenChamber connects to OpenCode over the compose network, both services share a workspace volume, and runtime secrets stay outside the images via environment variables.
 
 **Tech Stack:** Docker Compose, Dockerfile, shell entrypoint/bootstrap scripts, OpenCode, oh-my-opencode-slim, OpenChamber, Dokploy
 
@@ -48,10 +48,6 @@ UI_PASSWORD=change-me
 OPENCODE_HOST=http://opencode:4096
 OPENCODE_SKIP_START=true
 
-# OpenCode
-OPENCODE_SERVER_PASSWORD=change-me-too
-OPENCODE_SERVER_USERNAME=admin
-
 # LLM providers (fill only what you use)
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
@@ -73,8 +69,6 @@ services:
     env_file:
       - .env
     environment:
-      OPENCODE_SERVER_PASSWORD: ${OPENCODE_SERVER_PASSWORD}
-      OPENCODE_SERVER_USERNAME: ${OPENCODE_SERVER_USERNAME}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
@@ -130,8 +124,6 @@ services:
     env_file:
       - .env
     environment:
-      OPENCODE_SERVER_PASSWORD: ${OPENCODE_SERVER_PASSWORD}
-      OPENCODE_SERVER_USERNAME: ${OPENCODE_SERVER_USERNAME}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
@@ -189,14 +181,14 @@ git commit -m "chore: add initial compose and env contract"
 
 - [ ] **Step 1: Write the failing image definition**
 
-Create `Dockerfile.opencode` with an intentionally incomplete image that does not install the plugin yet:
+Create `Dockerfile.opencode` with an intentionally incomplete image that does not install the plugin yet. Note: the installable Bun package is `opencode-ai`, while the runtime binary remains `opencode`:
 
 ```dockerfile
 FROM oven/bun:1
 
 WORKDIR /app
 
-RUN bun add -g opencode
+RUN bun add -g opencode-ai
 
 CMD ["opencode", "serve", "--hostname", "0.0.0.0", "--port", "4096"]
 ```
@@ -227,7 +219,7 @@ RUN useradd -m -d /home/opencode -s /bin/bash opencode
 
 WORKDIR /app
 
-RUN bun add -g opencode oh-my-opencode-slim@latest
+RUN bun add -g opencode-ai oh-my-opencode-slim@latest
 
 COPY scripts/opencode-entrypoint.sh /usr/local/bin/opencode-entrypoint.sh
 RUN chmod +x /usr/local/bin/opencode-entrypoint.sh && mkdir -p /workspace /home/opencode/.config /home/opencode/.local/share && chown -R opencode:opencode /workspace /home/opencode
@@ -333,8 +325,8 @@ if ! command -v opencode >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! command -v oh-my-opencode-slim >/dev/null 2>&1; then
-  echo "oh-my-opencode-slim binary not found" >&2
+if ! bunx oh-my-opencode-slim --help >/dev/null 2>&1; then
+  echo "oh-my-opencode-slim package not found in bun cache" >&2
   exit 1
 fi
 
@@ -360,17 +352,32 @@ git commit -m "feat: bootstrap opencode with slim plugin"
 
 ## Task 4: Configure OpenChamber to use the external OpenCode backend and shared workspace
 
+> **Plan correction:** The earlier `OPENCHAMBER_IMAGE=ghcr.io/openchamber/openchamber:main` assumption is superseded. Upstream does not currently publish a pullable public GHCR image for this stack, so Task 4 uses a local build from an `openchamber/` git submodule pinned to release tag `v1.9.10`.
+
 **Files:**
+- Create: `.gitmodules`
 - Modify: `docker-compose.yml`
+- Create: `openchamber/` (git submodule checkout)
 - Test: `docker compose up`
 
-- [ ] **Step 1: Write the failing OpenChamber service configuration**
+- [ ] **Step 1: Add the pinned OpenChamber submodule**
 
-Temporarily remove the external backend wiring from `openchamber` in `docker-compose.yml` so the test captures the wrong behavior:
+Add the upstream repository as a git submodule and pin it to the latest approved release tag:
+
+```bash
+git submodule add https://github.com/openchamber/openchamber.git openchamber
+git -C openchamber checkout v1.9.10
+```
+
+Expected result: `.gitmodules` is created and `openchamber/` is checked out at tag `v1.9.10`.
+
+- [ ] **Step 2: Write the failing OpenChamber service configuration**
+
+Temporarily keep `openchamber` on an image-based definition so the test captures the wrong behavior:
 
 ```yaml
   openchamber:
-    image: ${OPENCHAMBER_IMAGE}
+    image: ghcr.io/openchamber/openchamber:main
     env_file:
       - .env
     environment:
@@ -384,7 +391,7 @@ Temporarily remove the external backend wiring from `openchamber` in `docker-com
       - workspace:/workspace
 ```
 
-- [ ] **Step 2: Start the full stack and verify the backend wiring is wrong**
+- [ ] **Step 3: Start the full stack and verify the image-based approach is wrong**
 
 Run:
 
@@ -392,15 +399,17 @@ Run:
 docker compose up --build -d && docker compose logs openchamber --tail=100
 ```
 
-Expected: FAIL or incorrect runtime behavior because OpenChamber is not explicitly pointed at `http://opencode:4096` and may try to start or assume its own backend.
+Expected: FAIL because the image-based OpenChamber reference cannot be pulled reliably for this stack.
 
-- [ ] **Step 3: Write the correct OpenChamber service definition**
+- [ ] **Step 4: Write the correct OpenChamber service definition**
 
 Update the `openchamber` service in `docker-compose.yml` to:
 
 ```yaml
   openchamber:
-    image: ${OPENCHAMBER_IMAGE}
+    build:
+      context: ./openchamber
+      dockerfile: Dockerfile
     env_file:
       - .env
     environment:
@@ -416,7 +425,7 @@ Update the `openchamber` service in `docker-compose.yml` to:
       - workspace:/workspace
 ```
 
-- [ ] **Step 4: Start the full stack and verify service-to-service connectivity**
+- [ ] **Step 5: Start the full stack and verify service-to-service connectivity**
 
 Run:
 
@@ -426,10 +435,10 @@ docker compose up --build -d && docker compose ps && docker compose logs opencha
 
 Expected: PASS with both services running and `/workspace` visible inside `openchamber`.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add docker-compose.yml
+git add .gitmodules docker-compose.yml openchamber
 git commit -m "feat: connect openchamber to external opencode"
 ```
 
@@ -474,7 +483,7 @@ This repository provides a Dokploy-ready Docker Compose stack for:
 ## Services
 
 - `opencode`: custom-built backend image with `oh-my-opencode-slim` preinstalled
-- `openchamber`: web UI connected to the `opencode` service
+- `openchamber`: web UI built from the pinned `openchamber/` submodule and connected to the `opencode` service
 
 ## Required environment variables
 
@@ -483,7 +492,6 @@ Copy `.env.example` to `.env` for local validation. In Dokploy, define the same 
 Key variables:
 
 - `UI_PASSWORD`
-- `OPENCODE_SERVER_PASSWORD`
 - `OPENCODE_HOST`
 - `OPENCODE_SKIP_START`
 - one or more provider API keys such as `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
@@ -523,19 +531,12 @@ OPENCODE_HOST=http://opencode:4096
 # Required: keep OpenChamber from launching its own embedded backend
 OPENCODE_SKIP_START=true
 
-# Required: password for the OpenCode backend
-OPENCODE_SERVER_PASSWORD=change-me-too
-
-# Optional: backend username
-OPENCODE_SERVER_USERNAME=admin
-
 # Optional: fill the providers you actually use
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 GOOGLE_API_KEY=
 
-# Optional image/runtime knobs
-OPENCHAMBER_IMAGE=ghcr.io/openchamber/openchamber:main
+# Optional runtime knobs
 OPENCODE_PORT=4096
 OPENCHAMBER_PORT=3000
 ```
@@ -563,15 +564,15 @@ git commit -m "docs: add dokploy deployment guide"
 - Modify: `README.md` (only if verification reveals missing operator guidance)
 - Test: runtime verification commands only
 
-- [ ] **Step 1: Verify the plugin binary exists in the OpenCode container**
+- [ ] **Step 1: Verify the OpenCode binary and plugin package availability inside the container**
 
 Run:
 
 ```bash
-docker compose exec opencode sh -lc 'command -v opencode && command -v oh-my-opencode-slim'
+docker compose exec opencode sh -lc 'command -v opencode && bunx oh-my-opencode-slim --help >/dev/null'
 ```
 
-Expected: PASS with paths for both binaries.
+Expected: PASS with a path for `opencode` and zero exit status from the `bunx` plugin package check.
 
 - [ ] **Step 2: Verify the shared workspace is actually shared**
 
@@ -600,7 +601,7 @@ If verification showed an operator gap, append the missing note to `README.md` u
 ```markdown
 ## Verification notes
 
-- Confirm `oh-my-opencode-slim` is available inside the `opencode` container with `command -v oh-my-opencode-slim`.
+- Confirm `oh-my-opencode-slim` is available inside the `opencode` container with `bunx oh-my-opencode-slim --help >/dev/null`.
 - Confirm both services can read `/workspace` before using GitHub clone workflows.
 ```
 

@@ -31,8 +31,9 @@ Hedef kullanım modeli web odaklıdır: kullanıcı Cloudflare DNS üzerinden Do
 ### OpenCode
 
 - OpenCode için resmi Docker image kullanımı belgelenmiş durumda.
+- Bun tabanlı kurulumda çalışır CLI paketi `opencode-ai` olarak dağıtılıyor; çalıştırılan binary adı ise `opencode`.
 - Headless servis modeli `opencode serve --hostname 0.0.0.0 --port 4096` ile destekleniyor.
-- Sunucu erişimi için `OPENCODE_SERVER_PASSWORD` ve isteğe bağlı `OPENCODE_SERVER_USERNAME` gibi environment variable'lar mevcut.
+- OpenCode servis modu environment variable tabanlı yapılandırmayı destekliyor; bu dağıtımda servis yalnızca internal compose network üzerinde çalışacağı için ek kullanıcı adı/şifre auth katmanı kullanılmayacak.
 - Veri ve config dizinleri XDG tabanlı dizinlerle yönlendirilebiliyor.
 
 ### oh-my-opencode-slim
@@ -46,7 +47,7 @@ Hedef kullanım modeli web odaklıdır: kullanıcı Cloudflare DNS üzerinden Do
 
 - OpenChamber, harici bir OpenCode backend'ine `OPENCODE_HOST` veya `OPENCODE_PORT` ile bağlanabiliyor.
 - `OPENCODE_SKIP_START=true` kullanıldığında kendi gömülü OpenCode başlatması devre dışı bırakılabiliyor.
-- Docker/compose dağıtım örnekleri mevcut.
+- Upstream Docker/compose dağıtım örnekleri prebuilt registry image yerine source tree içinden local build yaklaşımı kullanıyor.
 - GitHub authentication için UI/server tarafında device flow destekleyen yerleşik modüller var.
 - Repository clone yardımcıları ve GitHub odaklı workflow yetenekleri bulunuyor.
 
@@ -75,6 +76,7 @@ Bu seçimle UI katmanı ile backend/agent katmanı ayrılır. Sorun ayıklama, g
 `opencode` servisi için özel bir Dockerfile yazılacak. Bu image:
 
 - OpenCode'u kuracak
+- pratikte bunu `bun add -g opencode-ai` ile yapacak ve container içinde `opencode` binary'sini sağlayacak
 - `oh-my-opencode-slim` paketini kuracak
 - runtime'da gereken bootstrap akışı için gerekli script veya entrypoint katmanını taşıyacak
 
@@ -84,9 +86,13 @@ Kullanıcıya özel secret, GitHub auth veya runtime state build aşamasına gö
 
 OpenChamber, web arayüzü ve GitHub entegrasyon katmanı olarak ayrı serviste tutulacak. Bu servis:
 
+- repo içine `openchamber/` git submodule olarak eklenecek upstream source tree'den build edilecek
+- release tag'e pinlenecek; ilk hedef ref `v1.9.10` olacak
 - kendi embedded OpenCode örneğini başlatmayacak
 - `OPENCODE_HOST=http://opencode:4096` ile backend'e bağlanacak
 - `OPENCODE_SKIP_START=true` ile iç sunucu başlatmayı kapatacak
+
+Bu kararın nedeni, `ghcr.io/openchamber/openchamber:main` image referansının çekilememesi ve upstream'in resmi compose örneklerinde de local build modelinin kullanılmasıdır.
 
 ### Karar 4: Ortak workspace volume kullanılacak
 
@@ -140,6 +146,7 @@ Beklenen başlangıç komutu:
 Sorumluluklar:
 
 - web arayüzünü sunmak
+- repo içindeki submodule source tree'den build edilmek
 - GitHub authentication akışını başlatmak ve yönetmek
 - repository klonlama ve görsel çalışma akışlarını sağlamak
 - OpenCode backend'ine istemci olarak bağlanmak
@@ -176,8 +183,6 @@ SSH anahtarı veya `.ssh` mount tasarımın parçası değildir.
 
 ### OpenCode
 
-- `OPENCODE_SERVER_PASSWORD`
-- `OPENCODE_SERVER_USERNAME` (opsiyonel)
 - `OPENAI_API_KEY` (opsiyonel, kullanılan sağlayıcıya göre)
 - `ANTHROPIC_API_KEY` (opsiyonel, kullanılan sağlayıcıya göre)
 - diğer sağlayıcılara ait opsiyonel anahtarlar
@@ -187,6 +192,7 @@ SSH anahtarı veya `.ssh` mount tasarımın parçası değildir.
 - Compose dosyası değerleri environment variable'lar üzerinden okumalıdır.
 - Gerçek secret değerler repo içine yazılmamalıdır.
 - Dokploy arayüzünde `.env.example` referans alınarak gerçek environment variable değerleri tanımlanacaktır.
+- OpenChamber image referansı environment variable ile taşınmayacaktır; servis local build kullanacaktır.
 
 ## Startup ve Bootstrap Akışı
 
@@ -225,7 +231,7 @@ Container şu ilkelere göre başlar:
 - SSH mount kullanılmaz
 - Secret'lar image içine bake edilmez
 - Kullanıcıya özel bilgiler runtime environment ve kalıcı volume alanlarında tutulur
-- OpenCode backend için server password aktif kalır
+- OpenCode backend internal compose network ile sınırlı kalır; ek server auth katmanı eklenmez
 - OpenChamber için UI password aktif kalır
 
 Bu sınırlar uzak VDS üzerinde public erişim verilen bir Dokploy dağıtımı için saldırı yüzeyini gereksiz yere büyütmemeyi amaçlar.
