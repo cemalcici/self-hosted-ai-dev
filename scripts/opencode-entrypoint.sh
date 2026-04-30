@@ -48,9 +48,12 @@ fi
 
 # oh-my-opencode-slim is installed via bunx in the build and accessed via bunx or direct script execution
 # Verify the plugin package is available in the bun cache
-if ! bunx oh-my-opencode-slim --help >/dev/null 2>&1; then
+# Use output capture (not redirect) to avoid shell state issues with >/dev/null 2>&1
+bunx_output=$(bunx oh-my-opencode-slim --help 2>&1) || {
+  echo "oh-my-opencode-slim check failed:" >&2
+  echo "$bunx_output" >&2
   echo "oh-my-opencode-slim package not found in bun cache" >&2
   exit 1
-fi
+}
 
 exec opencode serve --hostname 0.0.0.0 --port "${OPENCODE_PORT:-4096}"

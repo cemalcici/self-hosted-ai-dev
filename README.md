@@ -54,3 +54,9 @@ OpenChamber is exposed on port `3000` by default.
 ## Shared workspace
 
 Both services mount the same `/workspace` volume. Repositories cloned through OpenChamber should appear there and be available to OpenCode.
+
+## oh-my-opencode-slim agents in OpenChamber
+
+`oh-my-opencode-slim` does not create native OpenCode agent files under `~/.config/opencode/agents/`. Because of that, OpenChamber's agent picker is expected to show the native OpenCode agents such as `build` and `plan`, not the plugin's internal specialist roles.
+
+The plugin specialists (`orchestrator`, `oracle`, `librarian`, `explorer`, `designer`, `fixer`) are plugin-managed roles. Use them through the orchestrator flow or by mentioning them in chat when the client supports that pattern, rather than expecting them to appear as standalone OpenChamber agent cards.

@@ -48,10 +48,6 @@ UI_PASSWORD=change-me
 OPENCODE_HOST=http://opencode:4096
 OPENCODE_SKIP_START=true
 
-# OpenCode
-OPENCODE_SERVER_PASSWORD=change-me-too
-OPENCODE_SERVER_USERNAME=admin
-
 # LLM providers (fill only what you use)
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
@@ -73,8 +69,6 @@ services:
     env_file:
       - .env
     environment:
-      OPENCODE_SERVER_PASSWORD: ${OPENCODE_SERVER_PASSWORD}
-      OPENCODE_SERVER_USERNAME: ${OPENCODE_SERVER_USERNAME}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
@@ -130,8 +124,6 @@ services:
     env_file:
       - .env
     environment:
-      OPENCODE_SERVER_PASSWORD: ${OPENCODE_SERVER_PASSWORD}
-      OPENCODE_SERVER_USERNAME: ${OPENCODE_SERVER_USERNAME}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
@@ -500,7 +492,6 @@ Copy `.env.example` to `.env` for local validation. In Dokploy, define the same 
 Key variables:
 
 - `UI_PASSWORD`
-- `OPENCODE_SERVER_PASSWORD`
 - `OPENCODE_HOST`
 - `OPENCODE_SKIP_START`
 - one or more provider API keys such as `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
@@ -539,12 +530,6 @@ OPENCODE_HOST=http://opencode:4096
 
 # Required: keep OpenChamber from launching its own embedded backend
 OPENCODE_SKIP_START=true
-
-# Required: password for the OpenCode backend
-OPENCODE_SERVER_PASSWORD=change-me-too
-
-# Optional: backend username
-OPENCODE_SERVER_USERNAME=admin
 
 # Optional: fill the providers you actually use
 OPENAI_API_KEY=

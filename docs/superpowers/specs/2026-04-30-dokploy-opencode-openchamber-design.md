@@ -33,7 +33,7 @@ Hedef kullanım modeli web odaklıdır: kullanıcı Cloudflare DNS üzerinden Do
 - OpenCode için resmi Docker image kullanımı belgelenmiş durumda.
 - Bun tabanlı kurulumda çalışır CLI paketi `opencode-ai` olarak dağıtılıyor; çalıştırılan binary adı ise `opencode`.
 - Headless servis modeli `opencode serve --hostname 0.0.0.0 --port 4096` ile destekleniyor.
-- Sunucu erişimi için `OPENCODE_SERVER_PASSWORD` ve isteğe bağlı `OPENCODE_SERVER_USERNAME` gibi environment variable'lar mevcut.
+- OpenCode servis modu environment variable tabanlı yapılandırmayı destekliyor; bu dağıtımda servis yalnızca internal compose network üzerinde çalışacağı için ek kullanıcı adı/şifre auth katmanı kullanılmayacak.
 - Veri ve config dizinleri XDG tabanlı dizinlerle yönlendirilebiliyor.
 
 ### oh-my-opencode-slim
@@ -183,8 +183,6 @@ SSH anahtarı veya `.ssh` mount tasarımın parçası değildir.
 
 ### OpenCode
 
-- `OPENCODE_SERVER_PASSWORD`
-- `OPENCODE_SERVER_USERNAME` (opsiyonel)
 - `OPENAI_API_KEY` (opsiyonel, kullanılan sağlayıcıya göre)
 - `ANTHROPIC_API_KEY` (opsiyonel, kullanılan sağlayıcıya göre)
 - diğer sağlayıcılara ait opsiyonel anahtarlar
@@ -233,7 +231,7 @@ Container şu ilkelere göre başlar:
 - SSH mount kullanılmaz
 - Secret'lar image içine bake edilmez
 - Kullanıcıya özel bilgiler runtime environment ve kalıcı volume alanlarında tutulur
-- OpenCode backend için server password aktif kalır
+- OpenCode backend internal compose network ile sınırlı kalır; ek server auth katmanı eklenmez
 - OpenChamber için UI password aktif kalır
 
 Bu sınırlar uzak VDS üzerinde public erişim verilen bir Dokploy dağıtımı için saldırı yüzeyini gereksiz yere büyütmemeyi amaçlar.
