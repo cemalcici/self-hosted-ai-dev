@@ -1,5 +1,7 @@
 # Dokploy OpenCode Stack
 
+> **Note:** `Dockerfile.single-container` is the in-progress Dokploy single-container image path ( Tasks 1–4 ).
+
 This repository provides a Dokploy-ready Docker Compose stack for:
 
 - OpenCode
