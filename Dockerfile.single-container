@@ -40,7 +40,10 @@ ENV XDG_DATA_HOME=/home/opencode/.local/share
 ENV BUN_INSTALL=/home/opencode/.bun
 ENV PATH=/home/opencode/.bun/bin:/home/openchamber/.npm-global/bin:${PATH}
 
-RUN bun add -g opencode-ai && bunx oh-my-opencode-slim@latest install --no-tui
+RUN bun add -g opencode-ai && bunx oh-my-opencode-slim@latest install --no-tui \
+  && mkdir -p /home/opencode/.bun/bin \
+  && ln -sf /home/opencode/.bun/install/global/node_modules/opencode-ai/bin/opencode /home/opencode/.bun/bin/opencode \
+  && ln -sf /home/opencode/.bun/install/global/node_modules/.bin/oh-my-opencode-slim /home/opencode/.bun/bin/oh-my-opencode-slim 2>/dev/null || true
 
 COPY config/oh-my-opencode-slim.jsonc /app/config/oh-my-opencode-slim.jsonc
 COPY scripts/opencode-entrypoint.sh /usr/local/bin/opencode-bootstrap.sh

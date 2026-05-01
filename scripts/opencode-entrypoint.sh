@@ -21,7 +21,7 @@ REPO_PLUGIN_CONFIG_TEMPLATE="/app/config/oh-my-opencode-slim.jsonc"
 
 cp "$REPO_PLUGIN_CONFIG_TEMPLATE" "$PLUGIN_CONFIG_FILE"
 
-# Add bun global bin to PATH for user
+# Add bun global bin to PATH
 export PATH="$HOME/.bun/bin:$PATH"
 
 if ! command -v opencode >/dev/null 2>&1; then
@@ -29,9 +29,7 @@ if ! command -v opencode >/dev/null 2>&1; then
   exit 1
 fi
 
-# oh-my-opencode-slim is installed via bunx in the build and accessed via bunx or direct script execution
-# Verify the plugin package is available in the bun cache
-# Use output capture (not redirect) to avoid shell state issues with >/dev/null 2>&1
+# Verify oh-my-opencode-slim is available
 bunx_output=$(bunx oh-my-opencode-slim --help 2>&1) || {
   echo "oh-my-opencode-slim check failed:" >&2
   echo "$bunx_output" >&2

@@ -1,15 +1,19 @@
 #!/usr/bin/env sh
-set -eu
+set -e
 
 OPENCODE_PORT="${OPENCODE_PORT:-4096}"
 OPENCHAMBER_PORT="${OPENCHAMBER_PORT:-3000}"
 OPENCODE_CONFIG_DIR="/home/opencode/.config/opencode"
 OPENCHAMBER_CONFIG_DIR="/home/openchamber/.config/openchamber"
 
+# Ensure shared PATH includes opencode's bun bin for both users
+export PATH="/home/opencode/.bun/bin:/home/openchamber/.npm-global/bin:${PATH}"
+
 mkdir -p "$OPENCODE_CONFIG_DIR" /home/opencode/.local/share/opencode "$OPENCHAMBER_CONFIG_DIR/run" /workspace
 chown -R opencode:opencode /home/opencode /workspace
 chown -R openchamber:openchamber /home/openchamber /workspace
 
+# Start OpenCode in background with full PATH
 /usr/local/bin/opencode-bootstrap.sh > /tmp/opencode.log 2>&1 &
 OPENCODE_PID=$!
 
@@ -22,11 +26,28 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-until su -s /bin/sh opencode -c "python3 -c \"import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:${OPENCODE_PORT}/health', timeout=2); raise SystemExit(0 if r.status == 200 else 1)\""; do
+# Wait for OpenCode health with retries
+MAX_RETRIES=60
+retries=0
+until python3 -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:${OPENCODE_PORT}/health', timeout=2); raise SystemExit(0 if r.status == 200 else 1)"; do
+  retries=$((retries+1))
+  if [ $retries -ge $MAX_RETRIES ]; then
+    echo "OpenCode failed to become healthy after $MAX_RETRIES retries" >&2
+    cat /tmp/opencode.log >&2
+    exit 1
+  fi
   sleep 1
 done
 
-su -s /bin/sh openchamber -c "export OPENCHAMBER_UI_PASSWORD='${UI_PASSWORD:-}'; export OPENCHAMBER_DATA_DIR='${OPENCHAMBER_CONFIG_DIR}'; export OPENCHAMBER_HOST='0.0.0.0'; exec bun /app/packages/web/bin/cli.js serve --port ${OPENCHAMBER_PORT} --foreground" &
+echo "OpenCode is healthy, starting OpenChamber..."
+
+# Start OpenChamber in background - pass PATH explicitly via env
+OPENCHAMBER_UI_PASSWORD="${UI_PASSWORD:-}" \
+OPENCHAMBER_DATA_DIR="${OPENCHAMBER_CONFIG_DIR}" \
+OPENCHAMBER_HOST="0.0.0.0" \
+PATH="/home/opencode/.bun/bin:/home/openchamber/.npm-global/bin:${PATH}" \
+  runuser -u openchamber -- env PATH="/home/opencode/.bun/bin:/home/openchamber/.npm-global/bin:${PATH}" \
+    bun /app/packages/web/bin/cli.js serve --port "${OPENCHAMBER_PORT}" --foreground &
 OPENCHAMBER_PID=$!
 
 wait "$OPENCHAMBER_PID"
