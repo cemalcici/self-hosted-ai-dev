@@ -28,7 +28,7 @@ Copy `.env.example` to `.env` for local validation. In Dokploy, define the same 
 Key variables:
 
 - `UI_PASSWORD`
-- `OPENCODE_PORT` (optional, defaults to 4096 inside the container)
+- `OPENCODE_PORT` (optional, defaults to 4096 inside the container — the internal OpenCode health-check and serve port)
 - one or more provider API keys such as `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
 
 ## Startup sequence
