@@ -1,42 +1,4 @@
-services:
-  opencode:
-    build:
-      context: .
-      dockerfile: Dockerfile.opencode
-    environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
-      OPENCODE_PORT: ${OPENCODE_PORT}
-    healthcheck:
-      test: >-
-        bun -e "fetch('http://127.0.0.1:' + (process.env.OPENCODE_PORT || 4096) + '/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
-      interval: 5s
-      timeout: 3s
-      retries: 20
-      start_period: 5s
-    volumes:
-      - opencode_config:/home/opencode/.config/opencode
-      - opencode_data:/home/opencode/.local/share/opencode
-      - workspace:/workspace
-
-  openchamber:
-    build:
-      context: .
-      dockerfile: Dockerfile.openchamber
-    environment:
-      UI_PASSWORD: ${UI_PASSWORD}
-      OPENCODE_HOST: ${OPENCODE_HOST}
-      OPENCODE_SKIP_START: ${OPENCODE_SKIP_START}
-    depends_on:
-      opencode:
-        condition: service_healthy
-    volumes:
-      - openchamber_config:/home/openchamber/.config/openchamber
-      - workspace:/workspace
-
-volumes:
-  opencode_config:
-  opencode_data:
-  openchamber_config:
-  workspace:
+# Deprecated: the active deployment model is Dokploy single-container deployment
+# from Dockerfile.single-container. This file is intentionally no longer the
+# primary deployment entrypoint.
+services: {}

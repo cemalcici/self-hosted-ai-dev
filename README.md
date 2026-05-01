@@ -42,9 +42,9 @@ The container starts OpenCode first, waits for its localhost health check on por
 - Mount persistent storage for OpenCode config/data, OpenChamber config, and workspace.
 - `OPENCODE_PORT=4096` is the internal backend port inside the container.
 
-## Shared workspace
+## Workspace directory
 
-Both services mount the same `/workspace` volume. Repositories cloned through OpenChamber should appear there and be available to OpenCode.
+The `/workspace` directory is shared by both services inside the container. Repositories cloned through OpenChamber are available to OpenCode without any additional volume configuration.
 
 ## oh-my-opencode-slim agents in OpenChamber
 
