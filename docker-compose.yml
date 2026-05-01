@@ -8,6 +8,13 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       OPENCODE_PORT: ${OPENCODE_PORT}
+    healthcheck:
+      test: >-
+        bun -e "fetch('http://127.0.0.1:' + (process.env.OPENCODE_PORT || 4096) + '/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
     volumes:
       - opencode_config:/home/opencode/.config/opencode
       - opencode_data:/home/opencode/.local/share/opencode
@@ -22,7 +29,8 @@ services:
       OPENCODE_HOST: ${OPENCODE_HOST}
       OPENCODE_SKIP_START: ${OPENCODE_SKIP_START}
     depends_on:
-      - opencode
+      opencode:
+        condition: service_healthy
     volumes:
       - openchamber_config:/home/openchamber/.config/openchamber
       - workspace:/workspace
