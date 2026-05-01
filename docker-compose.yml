@@ -23,8 +23,6 @@ services:
       OPENCODE_SKIP_START: ${OPENCODE_SKIP_START}
     depends_on:
       - opencode
-    ports:
-      - "${OPENCHAMBER_PORT}:3000"
     volumes:
       - openchamber_config:/home/openchamber/.config/openchamber
       - workspace:/workspace

@@ -41,7 +41,7 @@ docker compose up --build -d
 docker compose ps
 ```
 
-OpenChamber is exposed on port `3000` by default.
+OpenChamber listens internally on port `3000`; Traefik/Dokploy routes public traffic to it over the internal Docker network.
 
 ## Dokploy notes
 
