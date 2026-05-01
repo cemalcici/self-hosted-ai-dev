@@ -60,6 +60,7 @@ COPY --from=openchamber-builder /app/packages/web/dist /app/packages/web/dist
 
 RUN chmod +x /usr/local/bin/opencode-bootstrap.sh /usr/local/bin/openchamber-bootstrap.sh /usr/local/bin/single-container-entrypoint.sh \
   && mkdir -p /workspace /home/opencode/.config /home/opencode/.local/share /home/openchamber/.config /home/openchamber/.local /home/openchamber/.ssh \
+  && chmod o+X /home/opencode \
   && chown -R opencode:opencode /workspace /home/opencode \
   && chown -R openchamber:openchamber /home/openchamber
 
