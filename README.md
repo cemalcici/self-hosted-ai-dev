@@ -40,7 +40,7 @@ The container starts OpenCode first, waits for its localhost health check on por
 - Deploy from `Dockerfile.single-container` (imperative Dokploy deployment).
 - Route public traffic to internal port `3000` (OpenChamber).
 - Mount persistent storage for OpenCode config/data, OpenChamber config, and workspace.
-- `OPENCODE_PORT=4096` is the internal backend port inside the container.
+- `OPENCODE_PORT=4096` is the internal OpenCode health-check and serve port inside the container.
 
 ## Workspace directory
 
