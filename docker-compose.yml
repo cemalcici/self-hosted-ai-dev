@@ -24,7 +24,7 @@ services:
     depends_on:
       - opencode
     ports:
-      - "${OPENCHAMBER_PORT}:3000"
+      - "${OPENCHAMBER_PORT}:3030"
     volumes:
       - openchamber_config:/home/openchamber/.config/openchamber
       - workspace:/workspace
