@@ -16,6 +16,7 @@ services:
       - opencode_data:/home/opencode/.local/share/opencode
       - openchamber_config:/home/openchamber/.config/openchamber
       - workspace:/workspace
+      - ./config/oh-my-opencode-slim.jsonc:/home/opencode/.config/opencode/oh-my-opencode-slim.jsonc
 
 volumes:
   opencode_config:
