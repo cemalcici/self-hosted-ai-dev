@@ -12,8 +12,11 @@ docker compose up --build -d
 
 ### Dokploy notes
 
-- Public traffic should route to internal port `3000` (OpenChamber).
-- Mount the following persistent storage paths:
+`docker-compose.yml` is the primary deployment contract. It already declares named volumes for all persistent paths — use it as the source of truth for volume configuration.
+
+- **Persistence:** In Dokploy, map persistence to the container paths listed below, or preserve the named volumes declared by Compose (`opencode_config`, `opencode_data`, `openchamber_config`, `workspace`).
+- **Routing:** No host `ports:` mapping is required in this design. Dokploy/Traefik should route public traffic directly to the container's internal port `3000` (OpenChamber).
+- **Persistent storage paths:**
   - `/home/opencode/.config/opencode` — OpenCode runtime config, session state, and credentials
   - `/home/opencode/.local/share/opencode` — OpenCode persistent data
   - `/home/openchamber/.config/openchamber` — OpenChamber config
@@ -39,7 +42,7 @@ Key variables:
 
 - `UI_PASSWORD` — required; password for the OpenChamber web UI
 - `OPENCODE_PORT` — optional; defaults to 4096 inside the container; the internal OpenCode health-check and serve port
-- `OPENCHAMBER_PORT` — optional; defaults to 3000 inside the container; the internal OpenChamber serve port
+- `OPENCHAMBER_PORT` — optional; defaults to 3000 inside the container; the internal listen port inside the container (not a host publish setting — routing is handled by Dokploy/Traefik to container port 3000)
 - One or more provider API keys such as `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `GOOGLE_API_KEY`
 
 ## Startup sequence
