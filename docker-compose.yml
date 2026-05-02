@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: unless-stopped
     environment:
       UI_PASSWORD: ${UI_PASSWORD}
       OPENCODE_PORT: ${OPENCODE_PORT}
