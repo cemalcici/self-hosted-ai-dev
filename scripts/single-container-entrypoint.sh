@@ -26,13 +26,14 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-# Wait for OpenCode health with retries
+# Wait for OpenCode to be reachable on its port (TCP-level check)
+# Use socket so we don't depend on OpenCode's HTTP response latency during early startup.
 MAX_RETRIES=60
 retries=0
-until python3 -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:${OPENCODE_PORT}/health', timeout=2); raise SystemExit(0 if r.status == 200 else 1)"; do
+until python3 -c "import socket; s=socket.create_connection(('127.0.0.1',${OPENCODE_PORT}),timeout=2); s.close(); raise SystemExit(0)"; do
   retries=$((retries+1))
   if [ $retries -ge $MAX_RETRIES ]; then
-    echo "OpenCode failed to become healthy after $MAX_RETRIES retries" >&2
+    echo "OpenCode failed to become reachable after $MAX_RETRIES retries" >&2
     cat /tmp/opencode.log >&2
     exit 1
   fi
