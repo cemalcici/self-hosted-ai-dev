@@ -17,9 +17,9 @@ docker compose up --build -d
 - **Persistence:** In Dokploy, map persistence to the container paths listed below, or preserve the named volumes declared by Compose (`opencode_config`, `opencode_data`, `openchamber_config`, `workspace`).
 - **Routing:** No host `ports:` mapping is required in this design. Dokploy/Traefik should route public traffic directly to the container's internal port `3000` (OpenChamber).
 - **Persistent storage paths:**
-  - `/home/opencode/.config/opencode` — OpenCode runtime config, session state, and credentials
-  - `/home/opencode/.local/share/opencode` — OpenCode persistent data
-  - `/home/openchamber/.config/openchamber` — OpenChamber config
+  - `/home/aidev/.config/opencode` — OpenCode runtime config, session state, and credentials
+  - `/home/aidev/.local/share/opencode` — OpenCode persistent data
+  - `/home/aidev/.config/openchamber` — OpenChamber config
   - `/workspace` — workspace state, cloned repositories, and generated files
 
 Without these mounts, sessions, provider credentials, runtime config, and workspace state are lost on container restart.

@@ -7,9 +7,9 @@
 # so this script repairs ownership before the server starts.
 set -e
 
-CONFIG_DIR="/home/openchamber/.config/openchamber"
-USER="openchamber"
-OPENCHAMBER_DATA_DIR="/home/openchamber/.config/openchamber"
+CONFIG_DIR="/home/aidev/.config/openchamber"
+USER="aidev"
+OPENCHAMBER_DATA_DIR="/home/aidev/.config/openchamber"
 export OPENCHAMBER_DATA_DIR
 
 # Create the 'run' subdirectory that the openchamber server requires,

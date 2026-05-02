@@ -30,20 +30,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   runit \
   && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m -d /home/opencode -s /bin/bash opencode \
-  && useradd -m -d /home/openchamber -s /bin/bash openchamber
+RUN useradd -m -d /home/aidev -s /bin/bash aidev
 
-ENV OPENCODE_HOME=/home/opencode
-ENV OPENCHAMBER_HOME=/home/openchamber
-ENV XDG_CONFIG_HOME=/home/opencode/.config
-ENV XDG_DATA_HOME=/home/opencode/.local/share
-ENV BUN_INSTALL=/home/opencode/.bun
-ENV PATH=/home/opencode/.bun/bin:/home/openchamber/.npm-global/bin:${PATH}
+ENV OPENCODE_HOME=/home/aidev
+ENV OPENCHAMBER_HOME=/home/aidev
+ENV XDG_CONFIG_HOME=/home/aidev/.config
+ENV XDG_DATA_HOME=/home/aidev/.local/share
+ENV BUN_INSTALL=/home/aidev/.bun
+ENV PATH=/home/aidev/.bun/bin:${PATH}
 
 RUN bun add -g opencode-ai && bunx oh-my-opencode-slim@latest install --no-tui \
-  && mkdir -p /home/opencode/.bun/bin \
-  && ln -sf /home/opencode/.bun/install/global/node_modules/opencode-ai/bin/opencode /home/opencode/.bun/bin/opencode \
-  && ln -sf /home/opencode/.bun/install/global/node_modules/.bin/oh-my-opencode-slim /home/opencode/.bun/bin/oh-my-opencode-slim 2>/dev/null || true
+  && mkdir -p /home/aidev/.bun/bin \
+  && ln -sf /home/aidev/.bun/install/global/node_modules/opencode-ai/bin/opencode /home/aidev/.bun/bin/opencode \
+  && ln -sf /home/aidev/.bun/install/global/node_modules/.bin/oh-my-opencode-slim /home/aidev/.bun/bin/oh-my-opencode-slim 2>/dev/null || true
 
 COPY config/oh-my-opencode-slim.jsonc /app/config/oh-my-opencode-slim.jsonc
 COPY scripts/opencode-entrypoint.sh /usr/local/bin/opencode-bootstrap.sh
@@ -59,10 +58,9 @@ COPY --from=openchamber-builder /app/packages/web/server /app/packages/web/serve
 COPY --from=openchamber-builder /app/packages/web/dist /app/packages/web/dist
 
 RUN chmod +x /usr/local/bin/opencode-bootstrap.sh /usr/local/bin/openchamber-bootstrap.sh /usr/local/bin/single-container-entrypoint.sh \
-  && mkdir -p /workspace /home/opencode/.config /home/opencode/.local/share /home/openchamber/.config /home/openchamber/.local /home/openchamber/.ssh \
-  && chmod o+X /home/opencode \
-  && chown -R opencode:opencode /workspace /home/opencode \
-  && chown -R openchamber:openchamber /home/openchamber
+  && mkdir -p /workspace /home/aidev/.config/opencode /home/aidev/.local/share/opencode /home/aidev/.config/openchamber /home/aidev/.ssh \
+  && chmod o+X /home/aidev \
+  && chown -R aidev:aidev /workspace /home/aidev
 
 EXPOSE 3000 4096
 

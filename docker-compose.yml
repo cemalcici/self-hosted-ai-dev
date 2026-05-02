@@ -12,11 +12,11 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
     volumes:
-      - opencode_config:/home/opencode/.config/opencode
-      - opencode_data:/home/opencode/.local/share/opencode
-      - openchamber_config:/home/openchamber/.config/openchamber
+      - opencode_config:/home/aidev/.config/opencode
+      - opencode_data:/home/aidev/.local/share/opencode
+      - openchamber_config:/home/aidev/.config/openchamber
       - workspace:/workspace
-      - ./config/oh-my-opencode-slim.jsonc:/home/opencode/.config/opencode/oh-my-opencode-slim.jsonc
+      - ./config/oh-my-opencode-slim.jsonc:/home/aidev/.config/opencode/oh-my-opencode-slim.jsonc
 
 volumes:
   opencode_config:
