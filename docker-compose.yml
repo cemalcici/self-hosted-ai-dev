@@ -1,4 +1,0 @@
-# Deprecated: the active deployment model is Dokploy single-container deployment
-# from Dockerfile.single-container. This file is intentionally no longer the
-# primary deployment entrypoint.
-services: {}
