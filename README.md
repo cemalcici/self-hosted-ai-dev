@@ -4,10 +4,10 @@ This repository provides a single-container Dokploy image that packages OpenCode
 
 ## Primary deployment
 
-Deploy from `Dockerfile.single-container` — the unified runtime image built with multi-stage Dockerfile.
+Deploy from `Dockerfile` — the unified runtime image built with multi-stage Dockerfile.
 
 ```bash
-docker build -t self-hosted-ai-dev-single -f Dockerfile.single-container .
+docker build -t self-hosted-ai-dev-single .
 docker run --rm -e UI_PASSWORD=change-me -p 3000:3000 self-hosted-ai-dev-single
 ```
 
@@ -19,7 +19,7 @@ Before building, ensure the `openchamber` git submodule is present:
 git submodule update --init
 ```
 
-This is required because `Dockerfile.single-container` copies from the `openchamber/` source tree. Without the submodule checked out, the build will fail.
+This is required because `Dockerfile` copies from the `openchamber/` source tree. Without the submodule checked out, the build will fail.
 
 ## Required environment variables
 
@@ -37,7 +37,7 @@ The container starts OpenCode first, waits for its localhost health check on por
 
 ## Dokploy notes
 
-- Deploy from `Dockerfile.single-container` (imperative Dokploy deployment).
+- Deploy from `Dockerfile` (imperative Dokploy deployment).
 - Route public traffic to internal port `3000` (OpenChamber).
 - Mount persistent storage for OpenCode config/data, OpenChamber config, and workspace.
 - `OPENCODE_PORT=4096` is the internal OpenCode health-check and serve port inside the container.

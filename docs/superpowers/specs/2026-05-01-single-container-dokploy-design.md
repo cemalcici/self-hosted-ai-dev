@@ -19,7 +19,7 @@ The new target architecture intentionally trades service separation for operatio
 
 This design covers:
 
-- replacing the Compose-based two-service deployment with a single Dockerfile deployment
+- replacing the Compose-based two-service deployment with a single root `Dockerfile` deployment
 - running OpenCode and OpenChamber in one container under one startup supervisor
 - keeping oh-my-opencode-slim installed and repo-managed
 - adapting persistence, startup, and readiness to Dokploy's single-container model
@@ -59,7 +59,7 @@ Dokploy should deploy this stack through its single-container / imperative Docke
 
 ### Image Strategy
 
-The current split between `Dockerfile.opencode` and `Dockerfile.openchamber` is replaced by one new Dockerfile that builds the final runtime image.
+The current split between `Dockerfile.opencode` and `Dockerfile.openchamber` is replaced by one new root `Dockerfile` that builds the final runtime image.
 
 That image should:
 

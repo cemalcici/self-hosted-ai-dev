@@ -12,7 +12,7 @@
 
 ## Planned File Structure
 
-- **Create:** `Dockerfile.single-container`
+- **Create:** `Dockerfile`
   - Single source of truth image for Dokploy imperative deployment.
 - **Create:** `scripts/single-container-entrypoint.sh`
   - Supervisor/startup script that prepares config, starts OpenCode, waits for health, then starts OpenChamber and forwards signals.
@@ -34,7 +34,7 @@
 ### Task 1: Build the unified runtime image
 
 **Files:**
-- Create: `Dockerfile.single-container`
+- Create: `Dockerfile`
 - Modify: `README.md:1-68`
 
 - [ ] **Step 1: Write the failing verification command for the missing single-image path**
@@ -42,14 +42,14 @@
 Run:
 
 ```bash
-docker build -f Dockerfile.single-container .
+docker build .
 ```
 
-Expected: FAIL with `failed to read dockerfile` because `Dockerfile.single-container` does not exist yet.
+Expected: FAIL with `failed to read dockerfile` because `Dockerfile` does not exist yet.
 
 - [ ] **Step 2: Create the initial unified Dockerfile**
 
-Create `Dockerfile.single-container` with this initial structure:
+Create `Dockerfile` with this initial structure:
 
 ```dockerfile
 # syntax=docker/dockerfile:1
@@ -125,7 +125,7 @@ ENTRYPOINT ["/usr/local/bin/single-container-entrypoint.sh"]
 Run:
 
 ```bash
-docker build -f Dockerfile.single-container .
+docker build .
 ```
 
 Expected: PASS, producing a local image without Dockerfile syntax or missing-path failures.
@@ -135,7 +135,7 @@ Expected: PASS, producing a local image without Dockerfile syntax or missing-pat
 Run:
 
 ```bash
-git add Dockerfile.single-container
+git add Dockerfile
 git commit -m "build: add single-container runtime image"
 ```
 
@@ -153,7 +153,7 @@ git commit -m "build: add single-container runtime image"
 Run:
 
 ```bash
-docker run --rm -e UI_PASSWORD=change-me -e OPENCODE_PORT=4096 $(docker build -q -f Dockerfile.single-container .)
+docker run --rm -e UI_PASSWORD=change-me -e OPENCODE_PORT=4096 $(docker build -q .)
 ```
 
 Expected: FAIL because the unified entrypoint script does not exist yet or does not orchestrate both processes.
@@ -242,7 +242,7 @@ Update `scripts/openchamber-entrypoint-wrapper.sh` so it is either removed from 
 Run:
 
 ```bash
-docker build -q -f Dockerfile.single-container . > /tmp/single-image-id.txt
+docker build -q . > /tmp/single-image-id.txt
 docker run --rm -e UI_PASSWORD=change-me -e OPENCODE_PORT=4096 -p 3000:3000 "$(cat /tmp/single-image-id.txt)"
 ```
 
@@ -253,7 +253,7 @@ Expected: PASS, with logs showing OpenCode starts first, health wait completes, 
 Run:
 
 ```bash
-git add scripts/single-container-entrypoint.sh scripts/opencode-entrypoint.sh scripts/openchamber-entrypoint-wrapper.sh Dockerfile.single-container
+git add scripts/single-container-entrypoint.sh scripts/opencode-entrypoint.sh scripts/openchamber-entrypoint-wrapper.sh Dockerfile
 git commit -m "feat: run opencode and openchamber in one container"
 ```
 
@@ -293,7 +293,7 @@ This stack is designed for Dokploy single-container deployment from one Dockerfi
 
 ## Dokploy notes
 
-- Deploy from `Dockerfile.single-container`
+- Deploy from `Dockerfile`
 - Route public traffic to internal port `3000`
 - Mount persistent storage for OpenCode config/data, OpenChamber config, and workspace
 - The container starts OpenCode first, waits for health, then starts OpenChamber
@@ -328,7 +328,7 @@ and add a top comment block:
 
 ```yaml
 # Deprecated: the active deployment model is Dokploy single-container deployment
-# from Dockerfile.single-container. This file is intentionally no longer the
+# from Dockerfile. This file is intentionally no longer the
 # primary deployment entrypoint.
 ```
 
@@ -337,7 +337,7 @@ and add a top comment block:
 Run:
 
 ```bash
-grep -nE 'Dockerfile.single-container|single-container|Route public traffic to internal port 3000' README.md .env.example docker-compose.yml
+grep -nE 'Dockerfile|single-container|Route public traffic to internal port 3000' README.md .env.example docker-compose.yml
 ```
 
 Expected: PASS, showing the new imperative deployment wording.
@@ -356,7 +356,7 @@ git commit -m "docs: switch deployment guidance to single-container dokploy"
 ### Task 4: Verify the full single-container startup path
 
 **Files:**
-- Test: `Dockerfile.single-container`
+- Test: `Dockerfile`
 - Test: `scripts/single-container-entrypoint.sh`
 - Test: `README.md`
 - Test: `.env.example`
@@ -366,7 +366,7 @@ git commit -m "docs: switch deployment guidance to single-container dokploy"
 Run:
 
 ```bash
-docker build -f Dockerfile.single-container .
+docker build .
 ```
 
 Expected before final fixes: FAIL at least once during implementation until all runtime paths align.
@@ -376,7 +376,7 @@ Expected before final fixes: FAIL at least once during implementation until all 
 Run:
 
 ```bash
-docker build -t self-hosted-ai-dev-single -f Dockerfile.single-container .
+docker build -t self-hosted-ai-dev-single .
 ```
 
 Expected: PASS.
@@ -431,7 +431,7 @@ Expected: PASS with the repo-managed preset visible in the runtime config path.
 Run:
 
 ```bash
-git add Dockerfile.single-container scripts/single-container-entrypoint.sh scripts/opencode-entrypoint.sh scripts/openchamber-entrypoint-wrapper.sh README.md .env.example docker-compose.yml
+git add Dockerfile scripts/single-container-entrypoint.sh scripts/opencode-entrypoint.sh scripts/openchamber-entrypoint-wrapper.sh README.md .env.example docker-compose.yml
 git commit -m "feat: move dokploy deployment to single-container runtime"
 ```
 
@@ -459,7 +459,7 @@ No spec gaps found.
 
 ### Type / Naming Consistency
 
-- New Dockerfile name is consistently `Dockerfile.single-container`
+- New Dockerfile name is consistently `Dockerfile`
 - Supervisor script is consistently `scripts/single-container-entrypoint.sh`
 - Runtime health target is consistently OpenCode on `127.0.0.1:${OPENCODE_PORT:-4096}`
 - Public service target is consistently OpenChamber on internal port `3000`
