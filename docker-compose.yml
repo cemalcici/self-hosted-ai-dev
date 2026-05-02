@@ -1,0 +1,24 @@
+services:
+  aidev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      UI_PASSWORD: ${UI_PASSWORD}
+      OPENCODE_PORT: ${OPENCODE_PORT}
+      OPENCHAMBER_PORT: ${OPENCHAMBER_PORT}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+    volumes:
+      - opencode_config:/home/opencode/.config/opencode
+      - opencode_data:/home/opencode/.local/share/opencode
+      - openchamber_config:/home/openchamber/.config/openchamber
+      - workspace:/workspace
+
+volumes:
+  opencode_config:
+  opencode_data:
+  openchamber_config:
+  workspace:

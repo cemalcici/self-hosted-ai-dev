@@ -2,45 +2,52 @@
 
 This repository provides a single-container Dokploy image that packages OpenCode, oh-my-opencode-slim, and OpenChamber into one runtime.
 
-## Primary deployment
-
-Deploy from `Dockerfile` — the unified runtime image built with multi-stage Dockerfile.
+## Primary deployment (compose-first)
 
 ```bash
-docker build -t self-hosted-ai-dev-single .
-docker run --rm -e UI_PASSWORD=change-me -p 3000:3000 self-hosted-ai-dev-single
+git submodule update --init
+cp .env.example .env
+docker compose up --build -d
 ```
+
+### Dokploy notes
+
+`docker-compose.yml` is the primary deployment contract. It already declares named volumes for all persistent paths — use it as the source of truth for volume configuration.
+
+- **Persistence:** In Dokploy, map persistence to the container paths listed below, or preserve the named volumes declared by Compose (`opencode_config`, `opencode_data`, `openchamber_config`, `workspace`).
+- **Routing:** No host `ports:` mapping is required in this design. Dokploy/Traefik should route public traffic directly to the container's internal port `3000` (OpenChamber).
+- **Persistent storage paths:**
+  - `/home/opencode/.config/opencode` — OpenCode runtime config, session state, and credentials
+  - `/home/opencode/.local/share/opencode` — OpenCode persistent data
+  - `/home/openchamber/.config/openchamber` — OpenChamber config
+  - `/workspace` — workspace state, cloned repositories, and generated files
+
+Without these mounts, sessions, provider credentials, runtime config, and workspace state are lost on container restart.
 
 ## Prerequisites
 
-Before building, ensure the `openchamber` git submodule is present:
+Before deploying, ensure the `openchamber` git submodule is present:
 
 ```bash
 git submodule update --init
 ```
 
-This is required because `Dockerfile` copies from the `openchamber/` source tree. Without the submodule checked out, the build will fail.
+This is required because `docker compose build` copies from the `openchamber/` source tree. Without the submodule checked out, the build will fail.
 
-## Required environment variables
+## Environment variables
 
 Copy `.env.example` to `.env` for local validation. In Dokploy, define the same variables in the project environment UI.
 
 Key variables:
 
-- `UI_PASSWORD`
-- `OPENCODE_PORT` (optional, defaults to 4096 inside the container — the internal OpenCode health-check and serve port)
-- one or more provider API keys such as `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
+- `UI_PASSWORD` — required; password for the OpenChamber web UI
+- `OPENCODE_PORT` — optional; defaults to 4096 inside the container; the internal OpenCode health-check and serve port
+- `OPENCHAMBER_PORT` — optional; defaults to 3000 inside the container; the internal listen port inside the container (not a host publish setting — routing is handled by Dokploy/Traefik to container port 3000)
+- One or more provider API keys such as `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `GOOGLE_API_KEY`
 
 ## Startup sequence
 
 The container starts OpenCode first, waits for its localhost health check on port 4096, then starts OpenChamber on port 3000.
-
-## Dokploy notes
-
-- Deploy from `Dockerfile` (imperative Dokploy deployment).
-- Route public traffic to internal port `3000` (OpenChamber).
-- Mount persistent storage for OpenCode config/data, OpenChamber config, and workspace.
-- `OPENCODE_PORT=4096` is the internal OpenCode health-check and serve port inside the container.
 
 ## Workspace directory
 
