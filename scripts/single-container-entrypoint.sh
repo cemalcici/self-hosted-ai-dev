@@ -42,13 +42,9 @@ done
 
 echo "OpenCode is healthy, starting OpenChamber..."
 
-# Start OpenChamber in background - pass PATH explicitly via env
-OPENCHAMBER_UI_PASSWORD="${UI_PASSWORD:-}" \
-OPENCHAMBER_DATA_DIR="${OPENCHAMBER_CONFIG_DIR}" \
-OPENCHAMBER_HOST="0.0.0.0" \
-PATH="/home/aidev/.bun/bin:${PATH}" \
-  runuser -u aidev -- env PATH="/home/aidev/.bun/bin:${PATH}" \
-    bun /app/packages/web/bin/cli.js serve --port "${OPENCHAMBER_PORT}" --foreground &
+# Start OpenChamber via the wrapper so it cleans up any stale PID file left
+# by a previous crashed container before serve --foreground runs.
+runuser -u aidev -- /usr/local/bin/openchamber-bootstrap.sh &
 OPENCHAMBER_PID=$!
 
 wait "$OPENCHAMBER_PID"
