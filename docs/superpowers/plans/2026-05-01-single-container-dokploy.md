@@ -97,7 +97,6 @@ ENV PATH=/home/opencode/.bun/bin:/home/openchamber/.npm-global/bin:${PATH}
 RUN bun add -g opencode-ai && bunx oh-my-opencode-slim@latest install --no-tui
 RUN npm config set prefix /home/openchamber/.npm-global && mkdir -p /home/openchamber/.npm-global && npm install -g opencode-ai
 
-COPY config/oh-my-opencode-slim.jsonc /app/config/oh-my-opencode-slim.jsonc
 COPY scripts/opencode-entrypoint.sh /usr/local/bin/opencode-bootstrap.sh
 COPY scripts/openchamber-entrypoint-wrapper.sh /usr/local/bin/openchamber-bootstrap.sh
 COPY scripts/single-container-entrypoint.sh /usr/local/bin/single-container-entrypoint.sh
@@ -210,7 +209,6 @@ DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 OPENCODE_CONFIG_DIR="$CONFIG_HOME/opencode"
 PLUGIN_CONFIG_FILE="$OPENCODE_CONFIG_DIR/oh-my-opencode-slim.jsonc"
 CONFIG_FILE="$OPENCODE_CONFIG_DIR/opencode.json"
-REPO_PLUGIN_CONFIG_TEMPLATE="/app/config/oh-my-opencode-slim.jsonc"
 
 mkdir -p "$OPENCODE_CONFIG_DIR" "$DATA_HOME/opencode" /workspace
 
@@ -228,11 +226,13 @@ if [ ! -f "$CONFIG_FILE" ]; then
 EOF
 fi
 
-cp "$REPO_PLUGIN_CONFIG_TEMPLATE" "$PLUGIN_CONFIG_FILE"
+# The oh-my-opencode-slim preset is bind-mounted at runtime from the repo-managed
+# source path so no cp is needed here.
+
 command -v opencode >/dev/null 2>&1 || { echo "opencode binary not found" >&2; exit 1; }
 bunx_output=$(bunx oh-my-opencode-slim --help 2>&1) || { echo "$bunx_output" >&2; exit 1; }
 
-exec opencode serve --hostname 0.0.0.0 --port "${OPENCODE_PORT:-4096}"
+exec runuser -u aidev -- opencode serve --hostname 0.0.0.0 --port "${OPENCODE_PORT:-4096}"
 ```
 
 Update `scripts/openchamber-entrypoint-wrapper.sh` so it is either removed from the runtime path or reduced to a small reusable helper comment block, but it must no longer be the container's main ENTRYPOINT.
@@ -416,15 +416,7 @@ python3 -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.
 
 Expected: PASS printing `200`.
 
-- [ ] **Step 5: Verify repo-managed preset sync still works**
-
-Run:
-
-```bash
-docker exec "$(docker ps -q --filter ancestor=self-hosted-ai-dev-single | head -n1)" sh -lc 'grep -n "preset" /home/opencode/.config/opencode/oh-my-opencode-slim.jsonc'
-```
-
-Expected: PASS with the repo-managed preset visible in the runtime config path.
+- [ ] **Step 5: Verify preset is user-managed in runtime**
 
 - [ ] **Step 6: Commit the final architecture transition**
 

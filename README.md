@@ -12,17 +12,28 @@ docker compose up --build -d
 
 ### Dokploy notes
 
-`docker-compose.yml` is the primary deployment contract. It already declares named volumes for all persistent paths — use it as the source of truth for volume configuration.
+`docker-compose.yml` is the primary deployment contract. It declares host-mounted `./data/...` paths for all persistent storage — use it as the source of truth for volume configuration.
 
-- **Persistence:** In Dokploy, map persistence to the container paths listed below, or preserve the named volumes declared by Compose (`opencode_config`, `opencode_data`, `openchamber_config`, `workspace`).
+- **Persistence:** In Dokploy, bind-mount the host paths listed below to the container paths. The `./data/` directory on the host is the persistence anchor.
 - **Routing:** No host `ports:` mapping is required in this design. Dokploy/Traefik should route public traffic directly to the container's internal port `3000` (OpenChamber).
-- **Persistent storage paths:**
-  - `/home/aidev/.config/opencode` — OpenCode runtime config, session state, and credentials
-  - `/home/aidev/.local/share/opencode` — OpenCode persistent data
-  - `/home/aidev/.config/openchamber` — OpenChamber config
-  - `/workspace` — workspace state, cloned repositories, and generated files
+- **Persistent storage paths (host → container):**
+  - `./data/opencode/config` → `/home/aidev/.config/opencode` — OpenCode runtime config, session state, and credentials
+  - `./data/opencode/share` → `/home/aidev/.local/share/opencode` — OpenCode persistent data
+  - `./data/openchamber` → `/home/aidev/.config/openchamber` — OpenChamber config
+  - `./data/workspace` → `/workspace` — workspace state, cloned repositories, and generated files
+  - `./data/ssh` → `/home/aidev/.ssh` — SSH keys and known hosts
 
 Without these mounts, sessions, provider credentials, runtime config, and workspace state are lost on container restart.
+
+### Backup-worthy paths
+
+Back up these host directories to preserve user data:
+
+- `./data/opencode/config`
+- `./data/opencode/share`
+- `./data/openchamber`
+- `./data/workspace`
+- `./data/ssh`
 
 ## Prerequisites
 
@@ -59,8 +70,60 @@ The `/workspace` directory is shared by both services inside the container. Repo
 
 The plugin specialists (`orchestrator`, `oracle`, `librarian`, `explorer`, `designer`, `fixer`) are plugin-managed roles. Use them through the orchestrator flow or by mentioning them in chat when the client supports that pattern, rather than expecting them to appear as standalone OpenChamber agent cards.
 
-## Editing the oh-my-opencode-slim preset
+## Operator workflow
 
-The repo-managed source file for the default preset is `config/oh-my-opencode-slim.jsonc`. To change the shipped preset, edit that file in the repo and rebuild/redeploy the stack.
+### Entering the container
 
-**Automatic sync on every start:** the entrypoint script copies `config/oh-my-opencode-slim.jsonc` into the persistent OpenCode config directory as `~/.config/opencode/oh-my-opencode-slim.jsonc` on every container start. This means any preset changes committed to the repo are automatically applied when the container restarts or the stack is redeployed—no manual volume edits or file deletion required.
+```bash
+docker compose exec -u aidev aidev sh
+```
+
+### Verifying persistence paths
+
+```bash
+ls -la /home/aidev/.config/opencode
+ls -la /home/aidev/.config/openchamber
+```
+
+### Authenticating providers
+
+Inside the container as `aidev`, use the OpenCode CLI to authenticate:
+
+```bash
+opencode auth login
+```
+
+### Editing the runtime preset
+
+The runtime preset file is managed inside the persistent container filesystem. To edit it:
+
+```bash
+# Inside the container
+nano /home/aidev/.config/opencode/oh-my-opencode-slim.jsonc
+```
+
+After editing, restart the service to apply changes:
+
+```bash
+docker compose restart aidev
+```
+
+### Installing skills or plugins
+
+```bash
+docker compose exec -u aidev aidev sh
+# Inside the container, use opencode to install
+opencode skills install <skill-name>
+# Or install a plugin
+opencode plugin install <plugin-url>
+```
+
+### Verifying persistence after restart
+
+```bash
+docker compose exec -u aidev aidev sh
+ls -la /home/aidev/.config/opencode
+ls -la /home/aidev/.config/openchamber
+```
+
+All runtime state — config, credentials, installed plugins, and skills — persists across restarts as long as the `./data/` host directory is preserved.

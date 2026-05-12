@@ -12,6 +12,7 @@ RUN bun install --frozen-lockfile --ignore-scripts
 FROM openchamber-deps AS openchamber-builder
 WORKDIR /app
 COPY openchamber/. .
+# Prevent OpenChamber crash when a markdown skill path is missing
 RUN sed -i 's/const mdExists = !!mdPath;/const mdExists = !!mdPath \&\& fs.existsSync(mdPath);/' packages/web/server/lib/opencode/skills.js
 RUN bun run build:web
 
@@ -44,7 +45,6 @@ RUN bun add -g opencode-ai && bunx oh-my-opencode-slim@latest install --no-tui \
   && ln -sf /home/aidev/.bun/install/global/node_modules/opencode-ai/bin/opencode /home/aidev/.bun/bin/opencode \
   && ln -sf /home/aidev/.bun/install/global/node_modules/.bin/oh-my-opencode-slim /home/aidev/.bun/bin/oh-my-opencode-slim 2>/dev/null || true
 
-COPY config/oh-my-opencode-slim.jsonc /app/config/oh-my-opencode-slim.jsonc
 COPY scripts/opencode-entrypoint.sh /usr/local/bin/opencode-bootstrap.sh
 COPY scripts/openchamber-entrypoint-wrapper.sh /usr/local/bin/openchamber-bootstrap.sh
 COPY scripts/single-container-entrypoint.sh /usr/local/bin/single-container-entrypoint.sh

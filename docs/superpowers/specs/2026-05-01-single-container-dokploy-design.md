@@ -65,7 +65,6 @@ That image should:
 
 - include the OpenChamber build output and runtime files
 - include OpenCode and oh-my-opencode-slim
-- include the repo-managed preset file `config/oh-my-opencode-slim.jsonc`
 - include one startup script responsible for process supervision and readiness sequencing
 
 ## Process Supervision Design
@@ -131,12 +130,6 @@ OpenCode remains internal-only within the container.
 - no separate public exposure
 - no extra server username/password layer required for OpenCode itself
 - OpenChamber remains the intended user-facing entrypoint
-
-### oh-my-opencode-slim Preset
-
-`config/oh-my-opencode-slim.jsonc` remains the repo-authoritative source of truth.
-
-On every container start, startup logic should sync that file into OpenCode's runtime config location so that repo changes apply on restart/redeploy.
 
 ### OpenChamber
 
@@ -217,6 +210,5 @@ The exact filenames may change during implementation, but the target shape shoul
 
 - one new primary Dockerfile for the full stack
 - one repo-owned supervisor / startup script
-- retained `config/oh-my-opencode-slim.jsonc`
 - updated `README.md` for Dokploy single-container deployment
 - eventual retirement or deprecation of Compose-specific deployment wiring from the main path

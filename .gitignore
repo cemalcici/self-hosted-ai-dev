@@ -1,2 +1,7 @@
 .env
 .worktrees/
+data/opencode/
+data/openchamber/
+data/workspace/
+data/ssh/
+!data/README.md

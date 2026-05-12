@@ -12,14 +12,8 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
     volumes:
-      - opencode_config:/home/aidev/.config/opencode
-      - opencode_data:/home/aidev/.local/share/opencode
-      - openchamber_config:/home/aidev/.config/openchamber
-      - workspace:/workspace
-      - ./config/oh-my-opencode-slim.jsonc:/home/aidev/.config/opencode/oh-my-opencode-slim.jsonc
-
-volumes:
-  opencode_config:
-  opencode_data:
-  openchamber_config:
-  workspace:
+      - ./data/opencode/config:/home/aidev/.config/opencode
+      - ./data/opencode/share:/home/aidev/.local/share/opencode
+      - ./data/openchamber:/home/aidev/.config/openchamber
+      - ./data/workspace:/workspace
+      - ./data/ssh:/home/aidev/.ssh

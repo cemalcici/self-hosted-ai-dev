@@ -17,13 +17,13 @@ The current deployment model is:
 - OpenCode listens internally on `OPENCODE_PORT` (default `4096`).
 - OpenChamber listens internally on `OPENCHAMBER_PORT` (default `3000`).
 - Dokploy/Traefik should route public traffic to container port `3000`.
-- `config/oh-my-opencode-slim.jsonc` is bind-mounted into the runtime config path and is the repo-managed source of truth for the plugin preset.
+
 
 ## Key Files
 
-- `docker-compose.yml` — single-service deployment definition, persistence mounts, bind-mounted preset file
+- `docker-compose.yml` — single-service deployment definition, persistence mounts
 - `Dockerfile` — unified runtime image build
-- `config/oh-my-opencode-slim.jsonc` — repo-managed plugin preset/config
+
 - `scripts/single-container-entrypoint.sh` — top-level startup sequencing (OpenCode first, then OpenChamber)
 - `scripts/opencode-entrypoint.sh` — OpenCode bootstrap/config preparation
 - `scripts/openchamber-entrypoint-wrapper.sh` — OpenChamber startup helper and runtime ownership/pid handling
@@ -31,21 +31,15 @@ The current deployment model is:
 
 ## Runtime and Persistence Rules
 
-These paths are expected to persist:
+These container paths are persisted via host-mounted `./data/...` directories:
 
-- `/home/aidev/.config/opencode`
-- `/home/aidev/.local/share/opencode`
-- `/home/aidev/.config/openchamber`
-- `/workspace`
+- `/home/aidev/.config/opencode` — mounted from `./data/opencode/config`
+- `/home/aidev/.local/share/opencode` — mounted from `./data/opencode/share`
+- `/home/aidev/.config/openchamber` — mounted from `./data/openchamber`
+- `/home/aidev/.ssh` — mounted from `./data/ssh`
+- `/workspace` — mounted from `./data/workspace`
 
-The preset file is also mounted directly:
-
-- `./config/oh-my-opencode-slim.jsonc`
-  → `/home/aidev/.config/opencode/oh-my-opencode-slim.jsonc`
-
-Implication:
-- editing `config/oh-my-opencode-slim.jsonc` in the repo and restarting the container updates the runtime preset
-- no rebuild is required for preset-only changes
+Runtime config, credentials, installed plugins, and skills are user-managed inside the persistent container filesystem. There is no preset auto-copy or repo-managed source of truth for config at runtime.
 
 ## OpenChamber / oh-my-opencode-slim Notes
 
@@ -76,12 +70,6 @@ For health checks:
 ```bash
 docker compose exec aidev python3 -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:4096/global/health').status)"
 docker compose exec aidev python3 -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:3000/health').status)"
-```
-
-For preset verification:
-
-```bash
-docker compose exec aidev grep '"preset"' /home/aidev/.config/opencode/oh-my-opencode-slim.jsonc
 ```
 
 For submodule-dependent builds, ensure:

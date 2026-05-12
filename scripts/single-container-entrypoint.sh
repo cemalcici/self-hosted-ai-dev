@@ -6,13 +6,11 @@ OPENCHAMBER_PORT="${OPENCHAMBER_PORT:-3000}"
 OPENCODE_CONFIG_DIR="/home/aidev/.config/opencode"
 OPENCHAMBER_CONFIG_DIR="/home/aidev/.config/openchamber"
 
-# Ensure shared PATH includes aidev's bun bin
 export PATH="/home/aidev/.bun/bin:${PATH}"
 
-mkdir -p "$OPENCODE_CONFIG_DIR" /home/aidev/.local/share/opencode "$OPENCHAMBER_CONFIG_DIR/run" /workspace
+mkdir -p "$OPENCODE_CONFIG_DIR" /home/aidev/.local/share/opencode "$OPENCHAMBER_CONFIG_DIR/run" /workspace /home/aidev/.ssh
 chown -R aidev:aidev /home/aidev /workspace
 
-# Start OpenCode in background with full PATH
 /usr/local/bin/opencode-bootstrap.sh > /tmp/opencode.log 2>&1 &
 OPENCODE_PID=$!
 
@@ -25,9 +23,6 @@ cleanup() {
 
 trap cleanup INT TERM EXIT
 
-# Wait for OpenCode to be reachable on its port (TCP-level check)
-# Use socket so we don't depend on OpenCode's HTTP response latency during early startup.
-# The /global/health endpoint is the documented server readiness endpoint per opencode.ai/docs/server/
 MAX_RETRIES=60
 retries=0
 until python3 -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:${OPENCODE_PORT}/global/health', timeout=2); raise SystemExit(0 if r.status == 200 else 1)"; do
@@ -42,9 +37,7 @@ done
 
 echo "OpenCode is healthy, starting OpenChamber..."
 
-# Start OpenChamber via the wrapper so it cleans up any stale PID file left
-# by a previous crashed container before serve --foreground runs.
-runuser -u aidev -- /usr/local/bin/openchamber-bootstrap.sh &
+/usr/local/bin/openchamber-bootstrap.sh &
 OPENCHAMBER_PID=$!
 
 wait "$OPENCHAMBER_PID"

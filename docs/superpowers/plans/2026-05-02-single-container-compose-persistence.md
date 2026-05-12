@@ -43,7 +43,7 @@ Expected: FAIL because the current repo does not yet have a real compose contrac
 
 - [ ] **Step 2: Create the single-service compose file**
 
-Write `docker-compose.yml` with one service built from the root `Dockerfile`, the current env contract, and four named volume mounts:
+Write `docker-compose.yml` with one service built from the root `Dockerfile`, the current env contract, and five host-mounted volume dirs:
 
 ```yaml
 services:
@@ -59,16 +59,11 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
     volumes:
-      - opencode_config:/home/opencode/.config/opencode
-      - opencode_data:/home/opencode/.local/share/opencode
-      - openchamber_config:/home/openchamber/.config/openchamber
-      - workspace:/workspace
-
-volumes:
-  opencode_config:
-  opencode_data:
-  openchamber_config:
-  workspace:
+      - ./data/opencode/config:/home/aidev/.config/opencode
+      - ./data/opencode/share:/home/aidev/.local/share/opencode
+      - ./data/openchamber:/home/aidev/.config/openchamber
+      - ./data/workspace:/workspace
+      - ./data/ssh:/home/aidev/.ssh
 ```
 
 Keep this intentionally single-service. Do not reintroduce separate `opencode` / `openchamber` services.
@@ -248,7 +243,7 @@ Expected: output includes all four target paths.
 Run:
 
 ```bash
-docker compose exec aidev sh -lc 'test -f /home/opencode/.config/opencode/oh-my-opencode-slim.jsonc && test -d /home/openchamber/.config/openchamber && test -d /workspace' && docker compose restart aidev && sleep 20 && docker compose exec aidev sh -lc 'test -f /home/opencode/.config/opencode/oh-my-opencode-slim.jsonc && test -d /home/openchamber/.config/openchamber && test -d /workspace'
+docker compose exec aidev sh -lc 'test -d /home/aidev/.config/opencode && test -d /home/aidev/.config/openchamber && test -d /workspace' && docker compose restart aidev && sleep 20 && docker compose exec aidev sh -lc 'test -d /home/aidev/.config/opencode && test -d /home/aidev/.config/openchamber && test -d /workspace'
 ```
 
 Expected: PASS both before and after restart.
