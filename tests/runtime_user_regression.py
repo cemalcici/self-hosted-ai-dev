@@ -54,6 +54,18 @@ def test_runtime_processes_drop_to_aidev() -> None:
     assert "runuser -u \"$USER\" --" in openchamber
 
 
+def test_dockerfile_installs_nano_editor() -> None:
+    dockerfile = read("Dockerfile")
+    assert "nano" in dockerfile, "Runtime image must install nano for README workflow"
+
+
+def test_readme_points_to_real_preset_file() -> None:
+    readme = read("README.md")
+    assert "nano ./config/oh-my-opencode-slim.jsonc" in readme, (
+        "README must show the host-side nano command for the repo-managed preset"
+    )
+
+
 if __name__ == "__main__":
     test_repo_managed_preset_exists_as_jsonc()
     test_compose_bind_mounts_repo_preset_file()
@@ -61,4 +73,6 @@ if __name__ == "__main__":
     test_opencode_bootstrap_heredoc_uses_plugin_key()
     test_opencode_bootstrap_migrates_legacy_plugins_key()
     test_runtime_processes_drop_to_aidev()
+    test_dockerfile_installs_nano_editor()
+    test_readme_points_to_real_preset_file()
     print("runtime user regression checks passed")

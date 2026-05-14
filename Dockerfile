@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates \
   git \
   less \
+  nano \
   nodejs \
   npm \
   openssh-client \
