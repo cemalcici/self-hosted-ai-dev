@@ -99,7 +99,7 @@ The runtime preset file is managed inside the persistent container filesystem. T
 
 ```bash
 # Inside the container
-nano /home/aidev/.config/opencode/oh-my-opencode-slim.jsonc
+nano /home/aidev/.config/opencode/oh-my-opencode-slim.json
 ```
 
 After editing, restart the service to apply changes:

@@ -50,10 +50,30 @@ def test_runtime_processes_drop_to_aidev() -> None:
     assert "runuser -u \"$USER\" --" in openchamber
 
 
+def test_dockerfile_installs_nano_editor() -> None:
+    dockerfile = read("Dockerfile")
+    assert "nano" in dockerfile, "Runtime image must install nano for README workflow"
+
+
+def test_readme_points_to_real_preset_file() -> None:
+    readme = read("README.md")
+    assert "oh-my-opencode-slim.jsonc" not in readme, (
+        "README must not point operators to a missing .jsonc preset file"
+    )
+    assert "oh-my-opencode-slim.json" in readme, (
+        "README must point operators to the actual runtime preset file"
+    )
+    assert "nano /home/aidev/.config/opencode/oh-my-opencode-slim.json" in readme, (
+        "README must show a working nano command for editing the runtime preset"
+    )
+
+
 if __name__ == "__main__":
     test_repo_managed_preset_is_removed()
     test_compose_no_longer_bind_mounts_repo_preset()
     test_opencode_bootstrap_does_not_copy_repo_preset()
     test_opencode_bootstrap_migrates_legacy_plugins_key()
     test_runtime_processes_drop_to_aidev()
+    test_dockerfile_installs_nano_editor()
+    test_readme_points_to_real_preset_file()
     print("runtime user regression checks passed")
