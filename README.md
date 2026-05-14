@@ -95,14 +95,14 @@ opencode auth login
 
 ### Editing the runtime preset
 
-The runtime preset file is managed inside the persistent container filesystem. To edit it:
+The `oh-my-opencode-slim` preset file is repo-managed and bind-mounted into the container.
+Edit it on the host:
 
 ```bash
-# Inside the container
-nano /home/aidev/.config/opencode/oh-my-opencode-slim.jsonc
+nano ./config/oh-my-opencode-slim.jsonc
 ```
 
-After editing, restart the service to apply changes:
+Then restart the service to apply changes:
 
 ```bash
 docker compose restart aidev

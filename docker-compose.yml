@@ -12,6 +12,7 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
     volumes:
+      - ./config/oh-my-opencode-slim.jsonc:/home/aidev/.config/opencode/oh-my-opencode-slim.jsonc
       - ./data/opencode/config:/home/aidev/.config/opencode
       - ./data/opencode/share:/home/aidev/.local/share/opencode
       - ./data/openchamber:/home/aidev/.config/openchamber

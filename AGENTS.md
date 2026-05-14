@@ -39,7 +39,12 @@ These container paths are persisted via host-mounted `./data/...` directories:
 - `/home/aidev/.ssh` — mounted from `./data/ssh`
 - `/workspace` — mounted from `./data/workspace`
 
-Runtime config, credentials, installed plugins, and skills are user-managed inside the persistent container filesystem. There is no preset auto-copy or repo-managed source of truth for config at runtime.
+Hybrid preset rule:
+- `./config/oh-my-opencode-slim.jsonc` is bind-mounted to `/home/aidev/.config/opencode/oh-my-opencode-slim.jsonc`
+- this preset file is repo-managed on purpose because operators frequently edit it
+- other files under `/home/aidev/.config/opencode` remain runtime-managed via `./data/opencode/config`
+
+Runtime config, credentials, installed plugins, and skills are user-managed inside the persistent container filesystem, except for the preset file which is repo-managed.
 
 ## OpenChamber / oh-my-opencode-slim Notes
 
